@@ -1,6 +1,6 @@
 FROM arm64v8/python:3.12
 
-COPY ./app /app
+COPY ./tf-fastapi/app /app
 COPY requirements.txt /app
 WORKDIR /app
 
