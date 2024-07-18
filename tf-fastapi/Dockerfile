@@ -1,7 +1,7 @@
 FROM arm64v8/python:3.12
 
 COPY ./tf-fastapi/app /app
-COPY requirements.txt /app
+COPY ./tf-fastapi/requirements.txt /app
 WORKDIR /app
 
 RUN pip install -r requirements.txt
