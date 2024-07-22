@@ -76,7 +76,7 @@ jobs:
               
               echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
               
-              docker pull ghcr.io/silenc3502/tf-django-backend-server:latest
+              docker pull ghcr.io/silenc3502/tf-fastapi-server:latest
   
               docker image prune -f
               docker logout
