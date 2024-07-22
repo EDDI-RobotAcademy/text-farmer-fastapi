@@ -45,7 +45,7 @@ jobs:
         context: .
         file: ./tf-fastapi/Dockerfile
         push: true
-        tags: ghcr.io/silenc3502/text-farmer-fastapi-server:latest
+        tags: ghcr.io/silenc3502/tf-fastapi-server:latest
         platforms: linux/arm64
   
   deploy:
@@ -75,7 +75,7 @@ jobs:
               
               echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
               
-              docker pull ghcr.io/silenc3502/text-farmer-django-backend-server:latest
+              docker pull ghcr.io/silenc3502/tf-django-backend-server:latest
   
               docker image prune -f
               docker logout
