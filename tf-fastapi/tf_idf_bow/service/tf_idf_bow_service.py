@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
 
 class TfIdfBowService(ABC):
-    pass
+    @abstractmethod
+    def findSimilarAnswerInfo(self, userQuestion):
+        pass
