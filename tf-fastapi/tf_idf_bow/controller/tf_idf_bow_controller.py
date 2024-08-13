@@ -14,5 +14,4 @@ async def findSimilarAnswer(tfIdfBowRequestForm: TfIdfBowRequestForm,
                             tfIdfBowService: TfIdfBowServiceImpl =
                             Depends(injectTfIdfBowService)):
 
-    print(f"controller -> findSimilarAnswer(): tfIdfBowRequestForm")
-    print(f"controller -> RequestForm: {tfIdfBowRequestForm.userSendQuestion}")
+    tfIdfBowService.findSimilarAnswerInfo(tfIdfBowRequestForm.userSendQuestion)
