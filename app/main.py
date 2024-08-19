@@ -1,49 +1,27 @@
-import os.path
-import sys
-
-from fastapi.middleware.cors import CORSMiddleware
-
-import colorama
-
-import uvicorn
-from dotenv import load_dotenv
 from fastapi import FastAPI
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
-# from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'template'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'template', 'include', 'socket_server'))
-
-from template.deep_learning.controller.deep_learning_controller import deepLearningRouter
-from template.dice.controller.dice_controller import diceResultRouter
-from template.include.socket_server.initializer.init_domain import DomainInitializer
-from template.system_initializer.init import SystemInitializer
-from template.task_manager.manager import TaskManager
-
-DomainInitializer.initEachDomain()
-SystemInitializer.initSystemDomain()
+from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
 
 app = FastAPI()
 
-load_dotenv()
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
-origins = os.getenv('ALLOWED_ORIGINS', '').split(',')
+app.include_router(tfIdfBowRouter)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
-)
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    app.state.connections.add(websocket)
 
-app.include_router(deepLearningRouter)
-app.include_router(diceResultRouter)
-
-# app.include_router(tfIdfBowRouter)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        app.state.connections.remove(websocket)
 
 if __name__ == "__main__":
-    colorama.init(autoreset=True)
-
-    TaskManager.createSocketServer()
-    uvicorn.run(app, host=os.getenv('HOST'), port=int(os.getenv('FASTAPI_PORT')))
+    import uvicorn
+    uvicorn.run(app, host="192.168.0.55", port=33333)

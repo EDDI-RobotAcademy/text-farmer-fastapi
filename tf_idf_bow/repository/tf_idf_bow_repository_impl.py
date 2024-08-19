@@ -1,7 +1,6 @@
 import os
 import pickle
 import time
-import pandas
 
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -10,10 +9,10 @@ from tf_idf_bow.repository.tf_idf_bow_repository import TfIdfBowRepository
 
 class TfIdfBowRepositoryImpl(TfIdfBowRepository):
     VECTORIZATION_FILE_PATH = os.path.join(
-        os.getcwd(), "app", "assets", "introAnswerVectorization.pickle"
+        os.getcwd(), "assets", "totalAnswerVectorization.pickle"
     )
     RAW_ANSWERS_FILE_PATH = os.path.join(
-        os.getcwd(), "app", "assets", "answers_8cols.pickle"
+        os.getcwd(), "assets", "answers_8cols.pickle"
     )
     TOP_RANK_LIMIT = 3
     SIMILARITY_THRESHOLD = 0.1
