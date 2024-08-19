@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+# from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
 from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
 
 app = FastAPI()
