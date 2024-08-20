@@ -4,6 +4,7 @@ import pandas as pd
 from konlpy.tag import Okt
 from sklearn.feature_extraction.text import CountVectorizer
 from tqdm import tqdm
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 def tokenize_and_stem(text):
     okt = Okt()     # Open Korean Text: 오픈 소스 한국어 분석기
@@ -18,12 +19,14 @@ def tokenize_and_stem(text):
             stems.append(word)
     return ' '.join(stems)
 
+
 def preprocess_texts(text_list):
     print("형태소 분석 및 어간 추출 시작")
 
     processed_texts = [tokenize_and_stem(text) for text in tqdm(text_list)]
     print("형태소 분석 및 어간 추출 종료")
     return processed_texts
+
 
 def answerVectorization(answerlist):
     print("백터화 시작")
@@ -54,32 +57,32 @@ if __name__ == '__main__':
     # print(f"introAnswerVectorization 소요시간 : {end_time - start_time} 초", end="\n")
 
 
-    # intro, body, conclusion 모두 vectorize
-    start_time = time.time()
-
-    totalAnswerList = (answerDf['answer_intro'] + " " +
-                       answerDf['answer_body'] + " " +
-                       answerDf['answer_conclusion']).tolist()
-    saveAsPickle(
-        "totalAnswerVectorization",
-        answerVectorization(totalAnswerList))
-
-    end_time = time.time()
-    print(f"totalAnswerVectorization 소요시간 : {end_time - start_time} 초")
-
-    # # intro, body, conclusion 어간 추출 후 vectorize
+    # # intro, body, conclusion 모두 vectorize
     # start_time = time.time()
     #
     # totalAnswerList = (answerDf['answer_intro'] + " " +
     #                    answerDf['answer_body'] + " " +
     #                    answerDf['answer_conclusion']).tolist()
-    #
-    # # 형태소 분석 및 어간 추출 수행
-    # totalAnswerStemList = preprocess_texts(totalAnswerList)
-    #
     # saveAsPickle(
-    #     "totalAnswerStemVectorization",
-    #     answerVectorization(totalAnswerStemList))
+    #     "totalAnswerVectorization",
+    #     answerVectorization(totalAnswerList))
     #
     # end_time = time.time()
-    # print(f"totalAnswerStemVectorization 소요시간 : {end_time - start_time} 초")
+    # print(f"totalAnswerVectorization 소요시간 : {end_time - start_time} 초")
+
+    # intro, body, conclusion 어간 추출 후 vectorize
+    start_time = time.time()
+
+    totalAnswerList = (answerDf['answer_intro'] + " " +
+                       answerDf['answer_body'] + " " +
+                       answerDf['answer_conclusion']).tolist()
+
+    # 형태소 분석 및 어간 추출 수행
+    totalAnswerStemList = preprocess_texts(totalAnswerList)
+
+    saveAsPickle(
+        "totalAnswerStemVectorization",
+        answerVectorization(totalAnswerStemList))
+
+    end_time = time.time()
+    print(f"totalAnswerStemVectorization 소요시간 : {end_time - start_time} 초")
