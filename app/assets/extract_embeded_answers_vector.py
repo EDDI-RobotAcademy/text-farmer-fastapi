@@ -3,9 +3,8 @@ import pickle
 import time
 import pandas as pd
 import torch
-from transformers import BertTokenizer, BertModel
+from transformers import BertTokenizer, BertModel, pipeline
 from tqdm import tqdm
-
 
 class BioBERTEmbedder:
     def __init__(self):
@@ -13,6 +12,7 @@ class BioBERTEmbedder:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = BertTokenizer.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
         self.model = BertModel.from_pretrained("dmis-lab/biobert-base-cased-v1.1").to(self.device)
+        self.ner = pipeline("ner", model=self.model, tokenizer=self.tokenizer, device=-1)
         self.model.eval()
 
     def embed_text(self, text):
