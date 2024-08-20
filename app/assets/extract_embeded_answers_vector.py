@@ -10,13 +10,14 @@ from tqdm import tqdm
 class BioBERTEmbedder:
     def __init__(self):
         # Biobert 모델과 토크나이저 초기화
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = BertTokenizer.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
-        self.model = BertModel.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
+        self.model = BertModel.from_pretrained("dmis-lab/biobert-base-cased-v1.1").to(self.device)
         self.model.eval()
 
     def embed_text(self, text):
         # 입력 텍스트를 토큰화하고 모델에 입력
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
         # [CLS] 토큰의 임베딩을 반환
@@ -34,6 +35,11 @@ class BioBERTEmbedder:
 def save_embeddings_to_pickle(filename, embeddings, texts):
     with open(f"{filename}.pickle", "wb") as file:
         pickle.dump((embeddings, texts), file)
+
+
+def load_embeddings_from_pickle(filename):
+    with open(f"{filename}.pickle", "rb") as file:
+        return pickle.load(file)
 
 
 if __name__ == '__main__':
@@ -58,7 +64,7 @@ if __name__ == '__main__':
         embeddings_list.append(batch_embeddings)
 
     # 전체 임베딩 텐서를 하나로 결합
-    all_embeddings = torch.cat(embeddings_list, dim=0)
+    all_embeddings = torch.cat(embeddings_list, dim=0).cpu().numpy()  # GPU에서 계산된 결과를 CPU로 이동 후 Numpy 배열로 변환
 
     # Pickle 파일로 저장
     save_embeddings_to_pickle("totalAnswerEmbeddings", all_embeddings, totalAnswerList)
