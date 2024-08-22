@@ -1,82 +1,62 @@
 import os
 import pickle
-import time
-import torch
-from transformers import BertTokenizer, BertModel
-from tqdm import tqdm
+import openai
 import pandas as pd
 
+from tqdm import tqdm
+from dotenv import load_dotenv
 
-class BioBERTEmbedder:
-    def __init__(self):
-        # Biobert 모델과 토크나이저 초기화
-        self.tokenizer = BertTokenizer.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
-        self.model = BertModel.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
-        self.model.eval()
+load_dotenv()
 
-        # GPU 사용 가능 시 모델을 GPU로 이동
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-        else:
-            self.device = torch.device("cpu")
+openaiApiKey = os.getenv('OPENAI_API_KEY')
+if not openaiApiKey:
+    raise ValueError('API Key가 준비되어 있지 않습니다!')
 
-        self.model.to(self.device)
+class OpenAIEmbedder:
+    def __init__(self, openaiApiKey):
+        # OpenAI API 초기화
+        openai.api_key = openaiApiKey
 
     def embed_text(self, text):
-        # 입력 텍스트를 토큰화하고 모델에 입력
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512).to(
-            self.device)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-        # [CLS] 토큰의 임베딩을 반환
-        return outputs.last_hidden_state[:, 0, :].squeeze()
+        response = openai.embeddings.create(
+            input=text,
+            model="text-embedding-ada-002"
+        )
+        return response['data'][0]['embedding']
 
-    def process_batch(self, text_batch):
-        # 배치 단위로 임베딩 계산
-        embeddings = []
-        for text in text_batch:
-            embedding = self.embed_text(text)
-            embeddings.append(embedding)
-        return torch.stack(embeddings)  # 임베딩을 하나의 텐서로 결합
+def embed_and_save_answers():
+    # OpenAI 임베더 초기화
+    embedder = OpenAIEmbedder(openaiApiKey)
 
+    # 데이터 로드
+    df = pd.read_pickle('answers_8cols.pickle')
 
-def save_embeddings_to_pickle(filename, embeddings):
-    with open(f"{filename}.pickle", "wb") as file:
-        pickle.dump(embeddings.cpu(), file)  # GPU 텐서를 CPU로 이동 후 저장
+    # 필터링할 범주와 의도
+    categories = ["감염성질환", "성형미용 및 재건", "여성질환", "응급질환", "피부질환"]
+    intentions = ["예방", "원인", "증상", "진단", "치료"]
 
+    # intention별로 임베딩 저장을 위한 사전 초기화
+    embeddings_dict = {intention: [] for intention in intentions}
+
+    # 데이터 필터링 및 임베딩
+    for intention in intentions:
+        filtered_df = df[(df['disease_category'].isin(categories)) & (df['intention'] == intention)]
+
+        # 답변 텍스트 결합
+        totalAnswerList = (filtered_df['answer_intro'] + " " +
+                           filtered_df['answer_body'] + " " +
+                           filtered_df['answer_conclusion']).tolist()
+
+        # 임베딩 수행
+        for text in tqdm(totalAnswerList, desc=f"Embedding for {intention}"):
+            embedding = embedder.embed_text(text)
+            embeddings_dict[intention].append(embedding)
+
+    # 각 의도별로 임베딩 저장
+    for intention, embeddings in embeddings_dict.items():
+        # 임베딩 텐서를 pickle 파일로 저장
+        with open(f"{intention}_Embeddings.pickle", "wb") as file:
+            pickle.dump(embeddings, file)
 
 if __name__ == '__main__':
-    answerDf = pd.read_pickle("answers_8cols.pickle")
-
-    # valid_categories = ["감염성질환", "성형미용 및 재건", "여성질환", "응급질환", "피부질환"]
-    valid_categories = ["성형미용 및 재건", "피부질환"]
-    filtered_df = answerDf[(answerDf['disease_category'].isin(valid_categories)) &
-                           (answerDf['intention'] == "진단")]
-
-
-    # 데이터 준비
-    totalAnswerList = (filtered_df['answer_intro'] + " " +
-                       filtered_df['answer_body'] + " " +
-                       filtered_df['answer_conclusion']).tolist()
-
-    # Biobert 임베딩 준비
-    embedder = BioBERTEmbedder()
-
-    start_time = time.time()
-
-    # 배치 처리 (메모리 문제를 피하기 위해 적절한 배치 크기 설정 필요)
-    batch_size = 32
-    embeddings_list = []
-    for i in tqdm(range(0, len(totalAnswerList), batch_size)):
-        batch = totalAnswerList[i:i + batch_size]
-        batch_embeddings = embedder.process_batch(batch)
-        embeddings_list.append(batch_embeddings)
-
-    # 전체 임베딩 텐서를 하나로 결합
-    all_embeddings = torch.cat(embeddings_list, dim=0)
-
-    # Pickle 파일로 저장
-    save_embeddings_to_pickle("totalAnswerEmbeddings", all_embeddings)
-
-    end_time = time.time()
-    print(f"totalAnswerEmbeddings 소요시간 : {end_time - start_time} 초")
+    embed_and_save_answers()

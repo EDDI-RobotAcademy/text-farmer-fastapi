@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from openai_tf_idf.controller.openai_tf_idf_controller import openAITfIdfRouter
 from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
 
 app = FastAPI()
@@ -10,6 +11,7 @@ def read_root():
     return {"Hello": "World"}
 
 app.include_router(tfIdfBowRouter)
+app.include_router(openAITfIdfRouter)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
