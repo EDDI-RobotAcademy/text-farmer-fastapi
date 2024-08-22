@@ -15,8 +15,8 @@ class OpenAITfIdfServiceImpl(OpenAITfIdfService):
 
     def __load_local_data(self):
         # 임베딩과 답변을 로드하는 메서드입니다. 실제 구현은 로컬 파일 또는 DB에서 데이터 로드 로직에 따라 다를 수 있습니다.
-        embeddingList = np.load('홍역_Embeddings_test.pickle')  # 예를 들면, NumPy 배열로 저장된 임베딩 데이터
-        answerList = np.load('answers_8cols.pickle')  # 답변 리스트
+        embeddingList = np.load(r'C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\예방_Embeddings_test.pickle', allow_pickle=True)  # 예를 들면, NumPy 배열로 저장된 임베딩 데이터
+        answerList = np.load(r'C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\answers_8cols.pickle', allow_pickle=True)  # 답변 리스트
         return embeddingList, answerList
 
     async def letsTalk(self, userSendMessage):

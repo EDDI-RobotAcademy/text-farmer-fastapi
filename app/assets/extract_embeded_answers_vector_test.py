@@ -18,7 +18,7 @@ class OpenAIEmbedder:
         openai.api_key = openaiApiKey
 
     def embed_text(self, text):
-        response = openai.embeddings.create(
+        response = openai.Embedding.create(
             input=text,
             model="text-embedding-ada-002"
         )
