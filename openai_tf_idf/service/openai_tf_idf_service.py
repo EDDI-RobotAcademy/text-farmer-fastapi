@@ -8,7 +8,5 @@ class OpenAITfIdfService(ABC):
         pass
 
     @abstractmethod
-    def textSimilarityAnalysis(self, paperTitleList, userRequestPaperTitle):
+    def findBestResponse(self, userRequestText, embeddingList, answerList):
         pass
-
-

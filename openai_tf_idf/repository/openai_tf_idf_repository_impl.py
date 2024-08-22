@@ -53,9 +53,9 @@ class OpenAITfIdfRepositoryImpl(OpenAITfIdfRepository):
                 print(f"Request Error: {e}")
                 raise HTTPException(status_code=500, detail=f"Request Error: {e}")
 
-    def openAiBasedEmbedding(self, paperTitleList):
+    def openAiBasedEmbedding(self, text):
         response = openai.embeddings.create(
-            input=paperTitleList,
+            input=text,
             model="text-embedding-ada-002"
         )
 

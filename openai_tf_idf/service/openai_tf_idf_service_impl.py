@@ -1,6 +1,7 @@
+from typing import List
 import numpy as np
-from openai_tf_idf.controller.response_form.openai_paper_similarity_analysis_response_form import \
-    OpenAIPaperSimilarityAnalysisResponseForm
+
+from openai_tf_idf.controller.response_form.openai_tf_idf_response_form import OpenAITfIdfResponseForm
 from openai_tf_idf.repository.openai_tf_idf_repository_impl import OpenAITfIdfRepositoryImpl
 from openai_tf_idf.service.openai_tf_idf_service import OpenAITfIdfService
 
@@ -9,27 +10,36 @@ class OpenAITfIdfServiceImpl(OpenAITfIdfService):
     def __init__(self):
         self.__openAiTfIdfRepository = OpenAITfIdfRepositoryImpl()
 
+        # 로컬 저장된 임베딩 데이터와 답변 리스트를 로드합니다.
+        self.embeddingList, self.answerList = self.__load_local_data()
+
+    def __load_local_data(self):
+        # 임베딩과 답변을 로드하는 메서드입니다. 실제 구현은 로컬 파일 또는 DB에서 데이터 로드 로직에 따라 다를 수 있습니다.
+        embeddingList = np.load('홍역_Embeddings_test.pickle')  # 예를 들면, NumPy 배열로 저장된 임베딩 데이터
+        answerList = np.load('answers_8cols.pickle')  # 답변 리스트
+        return embeddingList, answerList
+
     async def letsTalk(self, userSendMessage):
         return await self.__openAiTfIdfRepository.generateText(userSendMessage)
 
-    async def textSimilarityAnalysis(self, paperTitleList, userRequestPaperTitle):
-        embeddingList = [
-            self.__openAiBasicRepository.openAiBasedEmbedding(paperTitle)
-            for paperTitle in paperTitleList]
 
-        embeddingVectorDimension = len(embeddingList[0])
-        faissIndex = self.__openAiBasicRepository.createL2FaissIndex(embeddingVectorDimension)
-        embeddingMatrix = np.array(embeddingList).astype('float32')
+    async def findBestResponse(self, userRequestText: str):
+        # 사용자의 질문 임베딩
+        userRequestEmbedding = self.__openAiTfIdfRepository.openAiBasedEmbedding(userRequestText)
+
+        # FAISS 인덱스 생성 및 학습
+        embeddingVectorDimension = len(self.embeddingList[0])
+        faissIndex = self.__openAiTfIdfRepository.createL2FaissIndex(embeddingVectorDimension)
+        embeddingMatrix = np.array(self.embeddingList).astype('float32')
         faissIndex.add(embeddingMatrix)
 
-        indexList, distanceList = (
-            self.__openAiBasicRepository.similarityAnalysis(userRequestPaperTitle, faissIndex))
+        # 유사도 분석
+        indexList, distanceList = self.__openAiTfIdfRepository.similarityAnalysis(userRequestEmbedding, faissIndex)
 
-        print(f"indexList: {indexList}, distanceList: {distanceList}")
+        print(f"가장 유사한 답변 인덱스: {indexList}, 거리: {distanceList}")
 
-        return OpenAIPaperSimilarityAnalysisResponseForm.fromOpenAIPaperSimilarityAnalysis(
-            indexList, distanceList, paperTitleList
-        )
+        # 가장 유사한 답변 출력
+        return OpenAITfIdfResponseForm.fromOpenAIPaperSimilarityAnalysis(indexList, distanceList, self.answerList)
 
 
 

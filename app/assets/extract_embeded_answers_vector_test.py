@@ -32,9 +32,13 @@ def embed_and_save_answers():
     df = pd.read_pickle('answers_8cols.pickle')
 
     # 필터링할 범주와 의도
-    categories = ["감염성질환", "성형미용 및 재건", "여성질환", "응급질환", "피부질환"]
-    intentions = ["치료"]
+    # categories = ["감염성질환", "성형미용 및 재건", "여성질환", "응급질환", "피부질환"]
+    categories = ["감염성질환"]
+    intentions = ["예방"]
     # intentions = ["예방", "원인", "정의", "증상", "진단", "치료"]
+
+    # '홍역'인 데이터만 필터링
+    df = df[df['disease_name_kor'] == '홍역']
 
     # intention별로 임베딩 저장을 위한 사전 초기화
     embeddings_dict = {intention: [] for intention in intentions}
@@ -56,7 +60,7 @@ def embed_and_save_answers():
     # 각 의도별로 임베딩 저장
     for intention, embeddings in embeddings_dict.items():
         # 임베딩 텐서를 pickle 파일로 저장
-        with open(f"{intention}_Embeddings.pickle", "wb") as file:
+        with open(f"{intention}_Embeddings_test.pickle", "wb") as file:
             pickle.dump(embeddings, file)
 
 if __name__ == '__main__':
