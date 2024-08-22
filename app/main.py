@@ -1,5 +1,13 @@
+import os.path
+import sys
+
+from fastapi.middleware.cors import CORSMiddleware
+
+import colorama
+
+import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
-from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from user_defined_initializer.init import UserDefinedInitializer
 from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
@@ -19,16 +27,17 @@ UserDefinedInitializer.initUserDefinedDomain()
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+load_dotenv()
 
-app.include_router(tfIdfBowRouter)
+origins = os.getenv('ALLOWED_ORIGINS', '').split(',')
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    app.state.connections.add(websocket)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 app.include_router(deepLearningRouter)
 app.include_router(diceResultRouter)
@@ -36,5 +45,7 @@ app.include_router(diceResultRouter)
 app.include_router(tfIdfBowRouter)
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="192.168.0.55", port=33333)
+    colorama.init(autoreset=True)
+
+    TaskManager.createSocketServer()
+    uvicorn.run(app, host=os.getenv('HOST'), port=int(os.getenv('FASTAPI_PORT')))
