@@ -18,11 +18,15 @@ class OpenAIEmbedder:
         openai.api_key = openaiApiKey
 
     def embed_text(self, text):
-        response = openai.Embedding.create(
-            input=text,
-            model="text-embedding-ada-002"
-        )
-        return response['data'][0]['embedding']
+        try:
+            response = openai.Embedding.create(
+                input=text,
+                model="text-embedding-ada-002"
+            )
+            return response['data'][0]['embedding']
+        except Exception as e:
+            print(f"OpenAI API 요청 실패: {e}")
+            return None
 
 def embed_and_save_answers():
     # OpenAI 임베더 초기화

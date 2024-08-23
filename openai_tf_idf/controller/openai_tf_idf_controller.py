@@ -1,33 +1,36 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException
+from dotenv import load_dotenv
+import os
 
-from openai_tf_idf.controller.request_form.openai_tf_idf_request_form import \
-    OpenAITfIdfRequestForm
+from openai_tf_idf.controller.request_form.openai_tf_idf_request_form import FindSimilarRequest
 from openai_tf_idf.service.openai_tf_idf_service_impl import OpenAITfIdfServiceImpl
 
 openAITfIdfRouter = APIRouter()
 
-async def injectOpenAITfIdfService() -> OpenAITfIdfServiceImpl:
-    return OpenAITfIdfServiceImpl()
+load_dotenv()
 
-@openAITfIdfRouter.post("/openai-similarity-analysis")
-async def textSimilarityAnalysisWithOpenAI(
-        openAITfIdfRequestForm: OpenAITfIdfRequestForm,
-        openAITfIdfService: OpenAITfIdfServiceImpl =
-        Depends(injectOpenAITfIdfService)):
+# Service를 초기화할 때 필요한 파일 경로를 환경 변수에서 가져옵니다.
+embedding_pickle_path = r"C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\예방_Embeddings_test.pickle"
+original_data_path = r"C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\answers_8cols.pickle"
 
-    print(f"controller -> textSimilarityAnalysisWithOpenAI(): "
-          f"openAITfIdfRequestForm: {openAITfIdfRequestForm}")
+# 환경 변수 확인
+if not embedding_pickle_path or not original_data_path:
+    raise ValueError('EMBEDDING_PICKLE_PATH 및 ORIGINAL_DATA_PATH가 설정되지 않았습니다.')
 
+service = OpenAITfIdfServiceImpl()
+
+@openAITfIdfRouter.post("/add_texts/")
+async def add_texts(texts: list[str]):
     try:
-        analyzedSimilarityText = await openAITfIdfService.findBestResponse(
-            openAITfIdfRequestForm.userRequestText
-        )
-
-        return JSONResponse(
-            content={"result": jsonable_encoder(analyzedSimilarityText)},
-            status_code=status.HTTP_200_OK
-        )
+        service.add_texts_to_index(texts)
+        return {"message": "Texts successfully added to index"}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@openAITfIdfRouter.post("/find_similar/")
+async def find_similar(request: FindSimilarRequest):
+    try:
+        response = await service.textSimilarityAnalysis(request.userQuestion)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

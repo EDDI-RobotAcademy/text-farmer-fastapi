@@ -2,20 +2,14 @@ from abc import ABC, abstractmethod
 
 
 class OpenAITfIdfRepository(ABC):
-
     @abstractmethod
-    def generateText(self, userSendMessage):
+    def openAiBasedEmbedding(self, text):
         pass
-
-    @abstractmethod
-    def similarityAnalysis(self, userRequestPaperTitle, faissIndex):
-        pass
-
-    @abstractmethod
-    def openAiBasedEmbedding(self, paperTitleList):
-        pass
-
 
     @abstractmethod
     def createL2FaissIndex(self, embeddingVectorDimension):
+        pass
+
+    @abstractmethod
+    def similarityAnalysis(self, userQuestion, faissIndex):
         pass
