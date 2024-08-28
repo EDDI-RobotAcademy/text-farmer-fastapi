@@ -1,8 +1,8 @@
 import os
 import sys
 
-from tf_idf_bow.repository.tf_idf_bow_repository_impl import TfIdfBowRepositoryImpl
-from tf_idf_bow.service.tf_idf_bow_service import TfIdfBowService
+from openai_tf_idf.repository.openai_tf_idf_repository_impl import OpenAITfIdfRepositoryImpl
+from openai_tf_idf.service.openai_tf_idf_service import OpenAITfIdfService
 
 from user_defined_queue.repository.user_defined_queue_repository_impl import UserDefinedQueueRepositoryImpl
 

@@ -6,7 +6,7 @@ services:
     ports:
       - 33333:33333
       - 37373:37373
-    environments:
+    environment:
       - HOST=${HOST}
       - PORT=${PORT}
       - FASTAPI_PORT=${FASTAPI_PORT}
