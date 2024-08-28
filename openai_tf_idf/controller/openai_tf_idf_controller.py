@@ -10,12 +10,12 @@ openAITfIdfRouter = APIRouter()
 load_dotenv()
 
 # Service를 초기화할 때 필요한 파일 경로를 환경 변수에서 가져옵니다.
-embedding_pickle_path = r"C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\예방_Embedded_answers.pickle"
-original_data_path = r"C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\예방_original_answers.csv"
+# embedding_pickle_path = r"C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\예방_Embedded_answers.pickle"
+# original_data_path = r"C:\TeamProject\SK-Networks-AI-1\TF\text-farmer-fastapi\app\assets\예방_original_answers.csv"
 
 # 환경 변수 확인
-if not embedding_pickle_path or not original_data_path:
-    raise ValueError('EMBEDDING_PICKLE_PATH 및 ORIGINAL_DATA_PATH가 설정되지 않았습니다.')
+# if not embedding_pickle_path or not original_data_path:
+#     raise ValueError('EMBEDDING_PICKLE_PATH 및 ORIGINAL_DATA_PATH가 설정되지 않았습니다.')
 
 service = OpenAITfIdfServiceImpl()
 
