@@ -18,7 +18,7 @@ async def injectOpenAITfIdfBowService() -> OpenAITfIdfServiceImpl:
     return OpenAITfIdfServiceImpl(UserDefinedQueueRepositoryImpl.getInstance())
 
 
-@openAITfIdfRouter.post("/find_similar/")
+@openAITfIdfRouter.get("/find_similar")
 async def find_similar(openAITfIdfService: OpenAITfIdfServiceImpl =
                     Depends(injectOpenAITfIdfBowService)):
 
