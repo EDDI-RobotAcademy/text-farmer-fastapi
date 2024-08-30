@@ -9,6 +9,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+from openai_tf_idf.controller.openai_tf_idf_controller import openAITfIdfRouter
 from user_defined_initializer.init import UserDefinedInitializer
 from tf_idf_bow.controller.tf_idf_bow_controller import tfIdfBowRouter
 
@@ -43,6 +44,7 @@ app.include_router(deepLearningRouter)
 app.include_router(diceResultRouter)
 
 app.include_router(tfIdfBowRouter)
+app.include_router(openAITfIdfRouter)
 
 if __name__ == "__main__":
     colorama.init(autoreset=True)
